@@ -1,0 +1,28 @@
+---
+# defaults file for apache-tomcat
+tomcat_archive_dest: /root/apache-tomcat-{{ tomcat_ver }}.tar.gz
+
+# APR - last updated April 2019
+apr_ver: 1.7.0
+apr_archive_url: http://apache.cs.utah.edu//apr/apr-{{ apr_ver }}.tar.gz
+apr_archive_dest: /root/apr-{{ apr_ver }}.tar.gz
+
+# I only manually compile OpenSSL on my RHEL 7 hosts.  RHEL 8 comes with a recent
+# enough version that I haven't had the need.
+# OpenSSL 1.1.1k released March 2021
+openssl_ver: 1.1.1k
+openssl_archive_url: https://www.openssl.org/source/openssl-{{ openssl_ver }}.tar.gz
+openssl_archive_dest: /root/openssl-{{ openssl_ver }}.tar.gz
+
+# These may update as you download and install new versions of Tomcat.
+# So far the simplest way of identifying the versions for me has been to unpack Tomcat when a new version is released,
+# then unpack bin/tomcat-native.tar.gz and bin/commons-daemon-native.tar.gz to check what version is included in a given
+# Tomcat release.
+# I'm sure there's a better way but this has worked well enough for now.
+tomcat_native_ver: 1.2.27
+commons_daemon_ver: 1.2.4
+
+JAVA_HOME: /usr/lib/jvm/java-11-openjdk
+
+# Legacy - from older RHEL 7 & CAS 5 hosts.  Not needed anymore
+JAVA_8_HOME: /usr/lib/jvm/java-1.8.0    

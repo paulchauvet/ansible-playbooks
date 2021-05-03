@@ -1,0 +1,7 @@
+---
+# tasks file for cas6
+- include_tasks: debug.yml
+- include_tasks: base-cas-config.yml
+- include_tasks: cas-ajp-proxy.yml
+- include_tasks: service-config.yml
+- include_tasks: push-saml-files.yml

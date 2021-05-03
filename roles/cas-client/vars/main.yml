@@ -1,0 +1,6 @@
+---
+# vars file for cas-client
+# These should be the public facing addresses - so if the server is behind a load balancer
+# it should be the load balancer's host name - not the host names of the servers behind the LB.
+DEV_CAS_URL: logindev.domain.edu
+TEST_CAS_URL: logintest.domain.edu

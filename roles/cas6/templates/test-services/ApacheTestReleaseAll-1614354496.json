@@ -1,0 +1,11 @@
+{
+    "@class" : "org.apereo.cas.services.RegexRegisteredService",
+    "serviceId" : "^https://{{ TEST_CAS_URL }}/return-all(\\z|/.*)",
+    "name" : "Apache Test - full attribute release",
+    "id" : 1614354496,
+    "description" : "Apache Test - full attribute release",
+    "attributeReleasePolicy" : {
+      "@class" : "org.apereo.cas.services.ReturnAllAttributeReleasePolicy"
+    },
+    "evaluationOrder" : 95000
+}

@@ -1,0 +1,175 @@
+---
+
+- include_vars: cas-vault.yml
+
+## DEV
+
+# Note: These are for dev specifically.  If we have multiple environments, there's
+# will be different keystores, certificates, metadata, etc., for each host.
+- name: Ensure saml-signing-cert .crt file (DEV) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-DEV.crt
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-DEV.crt
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure saml-signing-cert .key file (DEV) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-DEV.key
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-DEV.key
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure saml-signing-cert .pem file (DEV) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-DEV.pem
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-DEV.pem
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure sp-metadata.xml (DEV) is up-to-date
+  ansible.builtin.copy:
+    src: sp-metadata-DEV.xml
+    dest: /etc/cas/config/sp-metadata.xml
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure samlKeystore.jks (DEV) is up-to-date
+  ansible.builtin.copy:
+    src: samlKeystore-DEV.jks
+    dest: /etc/cas/config/samlKeystore.jks
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+# TEST
+- name: Ensure saml-signing-cert .crt file (TEST) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-TEST.crt
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-TEST.crt
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure saml-signing-cert .key file (TEST) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-TEST.key
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-TEST.key
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes        
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure saml-signing-cert .pem file (TEST) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-TEST.pem
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-TEST.pem
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure sp-metadata.xml (TEST) is up-to-date
+  ansible.builtin.copy:
+    src: sp-metadata-TEST.xml
+    dest: /etc/cas/config/sp-metadata.xml
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure samlKeystore.jks (TEST) is up-to-date
+  ansible.builtin.copy:
+    src: samlKeystore-TEST.jks
+    dest: /etc/cas/config/samlKeystore.jks
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+## PROD
+
+- name: Ensure saml-signing-cert .crt file (PROD) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-PROD.crt
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-PROD.crt
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure saml-signing-cert .key file (PROD) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-PROD.key
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-PROD.key
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure saml-signing-cert .pem file (PROD) is up-to-date
+  ansible.builtin.copy:
+    src: saml-signing-cert-NewPaltzLogin-PROD.pem
+    dest: /etc/cas/config/saml-signing-cert-NewPaltzLogin-PROD.pem
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure sp-metadata.xml (PROD) is up-to-date
+  ansible.builtin.copy:
+    src: sp-metadata-PROD.xml
+    dest: /etc/cas/config/sp-metadata.xml
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Ensure samlKeystore.jks (PROD) is up-to-date
+  ansible.builtin.copy:
+    src: samlKeystore-PROD.jks
+    dest: /etc/cas/config/samlKeystore.jks
+    mode: 0600
+    owner: tomcat
+    group: tomcat
+  ignore_errors: yes    
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat

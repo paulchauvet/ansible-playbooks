@@ -1,0 +1,8 @@
+---
+  - debug: var=inventory_hostname
+  - debug: var=inventory_hostname_short
+  - debug: var=ansible_hostname
+  - debug: var=ansible_distribution
+  - debug: var=ansible_distribution_major_version
+  - debug: var=ansible_distribution_version
+  - debug: var=jdk_version

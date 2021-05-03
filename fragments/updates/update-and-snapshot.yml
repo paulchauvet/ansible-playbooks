@@ -1,0 +1,79 @@
+## This is not yet fully documented for public use - it's just an extra that I use that isn't
+## directly related to my CAS playbooks but is something I use all the time.
+## It is released with no warranty or support.
+
+## Function: Update the specified systems via yum or dnf.
+## Prerequisites:
+##   - hosts must be defined in site.yml and in your ansible host file
+##   - the public ssh key for the user you run ansible as should be in the authorized_keys file for the target systems
+##   - VCENTER_* variables must be in your vcenter-vault.yml file.  You should use ansible-vault to encrypt that password.
+##   - vmware_* variables should be in your ansible hosts file.
+
+## Usage: ansible-playbook update-and-snapshot.yml --ask-vault-pass --limit <one or more host or host groups, separated by commas>
+## For example the following will run this on server1, server2, and all servers in test_phase1 (as defined in site.yml):
+## ansible-playbook update-and-snapshot.yml --ask-vault-pass --limit server1,server2,test_phase2
+
+- hosts: prod_phase1, prod_phase2, prod_phase3, test_phase1, test_phase2, wordpress
+  user: root
+  gather_facts: yes
+  serial: "50%"
+  vars_files: vcenter-vault.yml
+
+  tasks:
+
+    - name: "Show ansible_distribution version info"
+      debug: var=ansible_distribution
+    - name: "Show minor version info"
+      debug: var=ansible_distribution_major_version
+
+
+
+    - name: Snapshot VM (if VM)
+      vmware_guest_snapshot:
+        hostname: "{{ VCENTER_HOSTNAME }}"
+        validate_certs: False
+        username: "{{ VCENTER_USERNAME }}"
+        password: "{{ VCENTER_PASSWORD }}"
+        datacenter: "Computer Services"
+        name: "{{ vmware_name }}"
+        folder: "{{ vmware_folder }}"
+        state: present
+        quiesce: True
+        snapshot_name: "ansible-osupdates-backup-{{ lookup('pipe', 'date +%Y%m%d') }}"
+      when: "vmware_name is defined"
+      delegate_to: localhost
+
+    - name: Yum cache clear
+      command: /usr/bin/yum clean all
+      when: ansible_distribution == 'RedHat' and (ansible_distribution_major_version == '7' or ansible_distribution_major_version == '6')
+
+    - name: Apply yum updates
+      yum:
+        name: "*"
+        state: "latest"
+      register: yum
+      when: ansible_distribution == 'RedHat' and (ansible_distribution_major_version == '7' or ansible_distribution_major_version == '6')
+
+    - name: Apply dnf updates
+      yum:
+        name: "*"
+        state: "latest"
+      register: dnf
+      when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+    - name: restart system
+      shell: sleep 5s && /sbin/shutdown -r now
+      when: (yum.changed or dnf.changed) and 'do_not_reboot' not in group_names
+      ignore_errors: yes
+      async: 1
+      poll: 0
+
+
+    - name: Wait for 15 seconds
+      pause: seconds=15
+      when: (yum.changed or dnf.changed) and 'do_not_reboot' not in group_names 
+
+    - name: Wait for system return
+      local_action: wait_for host={{ inventory_hostname }} port=22 state=started timeout=300 connect_timeout=20
+      when: (yum.changed or dnf.changed) and 'do_not_reboot' not in group_names 
+

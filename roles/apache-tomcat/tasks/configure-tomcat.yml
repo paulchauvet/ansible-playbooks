@@ -1,0 +1,45 @@
+
+# I have various config files setup on a per-server basis.
+# This is why the section here has all the "when" statements looking for 'login6', which is
+# what all our CAS 6 hostnames start with.  You may not need this - or may want to otherwise customize for
+# other servers.
+- name: Setup catalina.properties
+  template:
+    src: cas6-catalina.properties.j2
+    dest: /etc/tomcat/catalina.properties
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Setup context.xml
+  template:
+    src: cas6-context.xml.j2
+    dest: /etc/tomcat/context.xml
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Setup server.xml
+  template:
+    src: cas6-server.xml.j2
+    dest: /etc/tomcat/server.xml
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Setup web.xml
+  template:
+    src: cas6-web.xml.j2
+    dest: /etc/tomcat/web.xml
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6" in inventory_hostname)
+  notify: restart tomcat
+

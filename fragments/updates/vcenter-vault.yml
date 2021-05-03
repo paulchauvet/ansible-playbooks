@@ -1,0 +1,6 @@
+# These should be in a file encrypted with ansible-vault
+# It is only clear text as an example here
+VCENTER_HOSTNAME: fqdn of your vCenter
+VCENTER_USERNAME: username with rights to take and remove snapshots
+VCENTER_PASSWORD: password of the above user
+

@@ -1,0 +1,28 @@
+---
+
+- name: Ensure service files are populated from templates (DEV)
+  template:
+    src: '{{ item.src }}'
+    dest: '/etc/cas/services/{{ item.path }}'
+    owner: root
+    group: tomcat
+  with_filetree: '../templates/dev-services'
+  when: item.state == 'file' and 'login6dev' in inventory_hostname
+
+- name: Ensure service files are populated from templates (TEST)
+  template:
+    src: '{{ item.src }}'
+    dest: '/etc/cas/services/{{ item.path }}'
+    owner: root
+    group: tomcat
+  with_filetree: '../templates/test-services'
+  when: item.state == 'file' and 'login6test' in inventory_hostname
+
+- name: Ensure service files are populated from templates (PROD)
+  template:
+    src: '{{ item.src }}'
+    dest: '/etc/cas/services/{{ item.path }}'
+    owner: root
+    group: tomcat
+  with_filetree: '../templates/prod-services'
+  when: item.state == 'file' and 'login6prod' in inventory_hostname

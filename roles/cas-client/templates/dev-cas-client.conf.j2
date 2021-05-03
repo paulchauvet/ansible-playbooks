@@ -1,0 +1,53 @@
+LoadModule auth_cas_module modules/mod_auth_cas.so
+
+# this is our basic config from earlier
+<Directory "/var/www/html/secured-by-cas">
+    <IfModule mod_auth_cas.c>
+        AuthType CAS
+    </IfModule>
+
+    Require valid-user
+</Directory>
+
+# Return all attribute directory
+<Directory "/var/www/html/return-all">
+    <IfModule mod_auth_cas.c>
+        AuthType        CAS
+        CASAuthNHeader  On
+    </IfModule>
+
+    Require valid-user
+</Directory>
+
+# Return mapped attributes directory
+<Directory "/var/www/html/return-mapped">
+    <IfModule mod_auth_cas.c>
+        AuthType        CAS
+        CASAuthNHeader  On
+    </IfModule>
+
+    Require valid-user
+</Directory>
+
+# Duo MFA test directory
+<Directory "/var/www/html/duo-secured">
+    <IfModule mod_auth_cas.c>
+        AuthType        CAS
+        CASAuthNHeader  On
+    </IfModule>
+
+    Require valid-user
+</Directory>
+
+
+<IfModule mod_auth_cas.c>
+    CASLoginUrl             https://{{ DEV_CAS_URL }}/cas/login
+    CASValidateUrl          https://{{ DEV_CAS_URL }}/cas/samlValidate
+    CASCookiePath           /var/cache/httpd/mod_auth_cas/
+    CASSSOEnabled           On
+    CASValidateSAML         On
+    CASDebug                Off
+    #LogLevel                Debug
+    CASAttributePrefix      CAS-
+
+</IfModule>

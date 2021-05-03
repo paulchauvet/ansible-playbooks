@@ -1,0 +1,125 @@
+cas.server.name=https://{{ DEV_CAS_URL }}
+cas.server.prefix=${cas.server.name}/cas
+
+logging.config: file:/etc/cas/config/log4j2.xml
+
+# JSON Service Registry
+cas.serviceRegistry.json.location=file:/etc/cas/services
+
+cas.tgc.secure:                         true
+cas.tgc.crypto.signing.key:             {{ DEV_TGC_SIGNING_KEY }}
+cas.tgc.crypto.encryption.key:          {{ DEV_TGC_ENCRYPTION_KEY }}
+
+cas.webflow.crypto.signing.key:         {{ DEV_WEBFLOW_SIGNING_KEY }}
+cas.webflow.crypto.encryption.key:      {{ DEV_WEBFLOW_ENCRYPTION_KEY }}
+
+# Default handler - enable only for testing - leave blank (not commented out) to disable
+cas.authn.accept.users=
+
+# Duo MFA
+cas.authn.mfa.duo[0].duoApiHost:        {{ DEV_DUO_API_HOST }}
+cas.authn.mfa.duo[0].duoIntegrationKey: {{ DEV_DUO_IKEY }}
+cas.authn.mfa.duo[0].duoSecretKey:      {{ DEV_DUO_SKEY }}
+cas.authn.mfa.duo[0].duoApplicationKey: {{ DEV_DUO_AKEY }}
+
+# Hazelcast Ticket Registry
+cas.ticket.registry.hazelcast.cluster.members:              {{ DEV_CAS_SERVERS }}
+cas.ticket.registry.hazelcast.mapName:                      tickets
+# The asyncBackupCount should be set to n-1 where n is the number of servers in the cluster
+cas.ticket.registry.hazelcast.cluster.asyncBackupCount:     1
+cas.ticket.registry.hazelcast.cluster.tcpipEnabled:         true
+cas.ticket.registry.hazelcast.cluster.port:                 5701
+cas.ticket.registry.hazelcast.cluster.portAutoIncrement:    true
+cas.ticket.registry.hazelcast.cluster.multicastEnabled:     false
+cas.ticket.registry.hazelcast.cluster.logging-type:         slf4j
+cas.ticket.registry.hazelcast.cluster.instanceName:         cas6dev
+cas.ticket.registry.hazelcast.crypto.signing.key:           {{ DEV_CAS_HAZELCAST_SIGNING_KEY }}           
+cas.ticket.registry.hazelcast.crypto.signing.keySize:       512
+cas.ticket.registry.hazelcast.crypto.encryption.key:        {{ DEV_CAS_HAZELCAST_ENCRYPTION_KEY }}
+cas.ticket.registry.hazelcast.crypto.encryption.keySize:    16
+cas.ticket.registry.hazelcast.crypto.alg:                   AES
+cas.ticket.registry.hazelcast.crypto.enabled:               true
+
+# Azure Delegated Auth (SAML) Settings
+cas.authn.pac4j.saml[0].keystorePassword={{ DEV_KEYSTORE_PASSWORD }}
+cas.authn.pac4j.saml[0].privateKeyPassword={{ DEV_SAML_KEY_PASSWORD }}
+cas.authn.pac4j.saml[0].keystorePath=/etc/cas/config/samlKeystore.jks
+cas.authn.pac4j.saml[0].serviceProviderEntityId={{ DEV_SAML_ENTITY_ID }}
+cas.authn.pac4j.saml[0].serviceProviderMetadataPath=/etc/cas/config/sp-metadata.xml
+cas.authn.pac4j.saml[0].identityProviderMetadataPath={{ DEV_AZURE_METADATA_PATH }}
+cas.authn.pac4j.saml[0].clientName={{ DEV_AZURE_APP_NAME }}
+cas.authn.pac4j.saml[0].use-name-qualifier=false
+cas.authn.pac4j.saml[0].maximumAuthenticationLifetime=10000
+
+# These are the LDAP server setups
+# If you have more than one organizational unit - you can list them both here.
+# If not - you can leave the second one out.
+# We have our Active users in the first one, and our Alumni in the second.
+cas.authn.ldap[0].order:                0
+cas.authn.ldap[0].name:                 Active Directory
+cas.authn.ldap[0].type:                 AD
+cas.authn.ldap[0].ldapUrl:              ldaps://{{ AD_SERVER_0 }}
+cas.authn.ldap[0].validatePeriod:       270
+cas.authn.ldap[0].poolPassivator:       NONE
+cas.authn.ldap[0].searchFilter:         sAMAccountName={user}
+cas.authn.ldap[0].baseDn:               {{ AD_BASE_DN_0 }}
+cas.authn.ldap[0].dnFormat:             {{ AD_DN_FORMAT_0 }} 
+
+cas.authn.ldap[1].order:                1
+cas.authn.ldap[1].name:                 Active Directory
+cas.authn.ldap[1].type:                 AD
+cas.authn.ldap[1].ldapUrl:              ldaps://{{ AD_SERVER_1 }}
+cas.authn.ldap[1].validatePeriod:       270
+cas.authn.ldap[1].poolPassivator:       NONE
+cas.authn.ldap[1].searchFilter:         sAMAccountName={user}
+cas.authn.ldap[1].baseDn:               {{ AD_BASE_DN_1 }}
+cas.authn.ldap[1].dnFormat:             {{ AD_DN_FORMAT_1 }} 
+
+
+# These are for attribute release
+cas.authn.attributeRepository.ldap[0].order=0
+cas.authn.attributeRepository.ldap[0].ldapUrl=ldaps://{{ AD_SERVER_0 }}
+cas.authn.attributeRepository.ldap[0].validatePeriod=270
+cas.authn.attributeRepository.ldap[0].searchFilter=cn={user}
+cas.authn.attributeRepository.ldap[0].baseDn={{ AD_BASE_DN_0 }}
+cas.authn.attributeRepository.ldap[0].bindDn={{ AD_BIND_USER_0 }}
+cas.authn.attributeRepository.ldap[0].bindCredential={{ AD_BIND_PASSWORD_0 }}
+cas.authn.attributeRepository.ldap[0].attributes.campusCode=campusCode
+cas.authn.attributeRepository.ldap[0].attributes.campusPersonLegalName=campusPersonLegalName
+cas.authn.attributeRepository.ldap[0].attributes.cn=cn
+cas.authn.attributeRepository.ldap[0].attributes.displayName=displayName
+cas.authn.attributeRepository.ldap[0].attributes.eduPersonPrimaryAffiliation=eduPersonPrimaryAffiliation
+cas.authn.attributeRepository.ldap[0].attributes.eduPersonPrincipalName=eduPersonPrincipalName
+cas.authn.attributeRepository.ldap[0].attributes.eduPersonTargetedID=UDC_IDENTIFIER
+cas.authn.attributeRepository.ldap[0].attributes.givenName=givenName
+cas.authn.attributeRepository.ldap[0].attributes.mail=mail
+cas.authn.attributeRepository.ldap[0].attributes.sisID=SPRIDEN_ID
+cas.authn.attributeRepository.ldap[0].attributes.sisID=sunyDegreeWorksID
+cas.authn.attributeRepository.ldap[0].attributes.sn=sn
+cas.authn.attributeRepository.ldap[0].attributes.sunyPersonID=sunyPersonID
+cas.authn.attributeRepository.ldap[0].attributes.sunyStudentID=sunyStudentID
+cas.authn.attributeRepository.ldap[0].attributes.memberOf=memberOf
+
+cas.authn.attributeRepository.ldap[1].order=1
+cas.authn.attributeRepository.ldap[1].ldapUrl=ldaps://{{ AD_SERVER_1 }}
+cas.authn.attributeRepository.ldap[1].validatePeriod=270
+cas.authn.attributeRepository.ldap[1].searchFilter=cn={user}
+cas.authn.attributeRepository.ldap[1].baseDn={{ AD_BASE_DN_1 }}
+cas.authn.attributeRepository.ldap[1].bindDn={{ AD_BIND_USER_1 }}
+cas.authn.attributeRepository.ldap[1].bindCredential={{ AD_BIND_PASSWORD_1 }}
+cas.authn.attributeRepository.ldap[1].attributes.campusCode=campusCode
+cas.authn.attributeRepository.ldap[1].attributes.campusPersonLegalName=campusPersonLegalName
+cas.authn.attributeRepository.ldap[1].attributes.cn=cn
+cas.authn.attributeRepository.ldap[1].attributes.displayName=displayName
+cas.authn.attributeRepository.ldap[1].attributes.eduPersonPrimaryAffiliation=eduPersonPrimaryAffiliation
+cas.authn.attributeRepository.ldap[1].attributes.eduPersonPrincipalName=eduPersonPrincipalName
+cas.authn.attributeRepository.ldap[1].attributes.eduPersonTargetedID=UDC_IDENTIFIER
+cas.authn.attributeRepository.ldap[1].attributes.givenName=givenName
+cas.authn.attributeRepository.ldap[1].attributes.mail=mail
+cas.authn.attributeRepository.ldap[1].attributes.sisID=SPRIDEN_ID
+cas.authn.attributeRepository.ldap[1].attributes.sisID=sunyDegreeWorksID
+cas.authn.attributeRepository.ldap[1].attributes.sn=sn
+cas.authn.attributeRepository.ldap[1].attributes.sunyPersonID=sunyPersonID
+cas.authn.attributeRepository.ldap[1].attributes.sunyStudentID=sunyStudentID
+cas.authn.attributeRepository.ldap[1].attributes.memberOf=memberOf
+

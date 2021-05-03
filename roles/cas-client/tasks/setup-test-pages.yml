@@ -1,0 +1,73 @@
+---
+
+- name: Setup CAS test index page
+  template:
+    src: main-index.php
+    dest: /var/www/html/index.php
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Ensure secured-by-cas directory exists
+  file:
+    path: /var/www/html/secured-by-cas
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Setup basic 'secured-by-cas' test index page
+  template:
+    src: basic-cas-check-index.php
+    dest: /var/www/html/secured-by-cas/index.php
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Ensure return-all directory exists
+  file:
+    path: /var/www/html/return-all
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Setup return-all index page
+  template:
+    src: return-all-index.php
+    dest: /var/www/html/return-all/index.php
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Ensure return-mapped directory exists
+  file:
+    path: /var/www/html/return-mapped
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Setup return-mapped index page
+  template:
+    src: return-mapped-index.php
+    dest: /var/www/html/return-mapped/index.php
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Ensure duo-secured directory exists
+  file:
+    path: /var/www/html/duo-secured
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Setup duo-secured index page
+  template:
+    src: duo-secured-index.php
+    dest: /var/www/html/duo-secured/index.php
+    mode: 0755
+    owner: root
+    group: root

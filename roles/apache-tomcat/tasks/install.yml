@@ -1,0 +1,278 @@
+- name: Check if Tomcat {{ tomcat_ver }} directory exists
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}
+  register: tomcat_directory
+
+- name: Check if Tomcat {{ tomcat_ver }} tarball exists
+  stat:
+    path: "{{ tomcat_archive_dest }}"
+  register: tomcat_tarball
+
+- name: Download Tomcat 8.5.x
+  get_url:
+    #url: "{{ tomcat_archive_url }}"
+    url: https://archive.apache.org/dist/tomcat/tomcat-8/v{{ tomcat_ver }}/bin/apache-tomcat-{{ tomcat_ver }}.tar.gz
+    dest: "{{ tomcat_archive_dest }}"
+  when: tomcat_tarball.stat.exists == False and tomcat_directory.stat.exists == False and tomcat_major_ver == 8.5
+
+- name: Download Tomcat 9.0.x
+  get_url:
+    url: https://archive.apache.org/dist/tomcat/tomcat-9/v{{ tomcat_ver }}/bin/apache-tomcat-{{ tomcat_ver }}.tar.gz
+    dest: "{{ tomcat_archive_dest }}"
+  when: tomcat_tarball.stat.exists == False and tomcat_directory.stat.exists == False and tomcat_major_ver == 9.0
+
+
+# Only unpack tomcat archive if the unpacked directory does not exist.
+# This cannot be used to install the same version without deletion of the old one
+- name: Unpack tomcat archive
+  unarchive:
+    src: "{{ tomcat_archive_dest }}"
+    dest: /opt/tomcat
+    owner: tomcat
+    group: tomcat
+    remote_src: yes
+  when: tomcat_directory.stat.exists == False
+
+
+# Create the permanent tomcat conf, log, temp, webapps, work directories for later symlinking
+- name: Create Tomcat permanent conf directory
+  file:
+    path: /etc/tomcat
+    state: directory
+    owner: root
+    group: tomcat
+    mode: "u=rwx,g=rx"
+
+- name: Create Tomcat permanent log directory
+  file:
+    path: /var/log/tomcat
+    state: directory
+    owner: tomcat
+    group: tomcat
+    mode: "u=rwx,g=rx"
+
+- name: Create Tomcat permanent temp directory
+  file:
+    path: /var/cache/tomcat/temp
+    state: directory        
+    owner: tomcat
+    group: tomcat
+    mode: "u=rwx,g=rx"
+
+- name: Create Tomcat permanent webapps directory
+  file: 
+    path: /var/lib/tomcat
+    state: directory
+    owner: tomcat
+    group: tomcat
+    mode: "u=rwx,g=rx"
+
+- name: Create Tomcat permanent work directory
+  file:
+    path: /var/cache/tomcat/work
+    state: directory
+    owner: tomcat
+    group: tomcat
+    mode: "u=rwx,g=rx"
+
+
+# If server.xml exists - then we can assume /etc/tomcat has been populated.
+# - If so - don't change it
+# - If not, assume it hasn't been populated and copy the new Tomcat's /conf to /etc/tomcat/
+- name: Check if server.xml exists
+  stat:
+    path: /etc/tomcat/server.xml
+  register: server_xml
+
+- name: Copy files from conf directory
+  copy:
+    src: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/conf/
+    dest: /etc/tomcat/
+    remote_src: yes
+    directory_mode: yes
+  when: server_xml.stat.exists == False
+
+# If ROOT exists - then we can assume /var/lib/tomcat has been populated.
+# - If so - don't change it.
+# - If not, assume it hasn't been populated and copy the new Tomcat's ROOT over
+# - This needs to be updated to handle version updates of ROOT
+- name: Check ROOT exists
+  stat:
+    path: /var/lib/tomcat/ROOT
+  register: root_webapps
+
+- name: Copy ROOT webapp directory
+  copy:
+    src: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/webapps/ROOT
+    dest: /var/lib/tomcat/
+    remote_src: yes
+    directory_mode: yes
+  when: root_webapps.stat.exists == False
+
+- name: Copy manager webapp
+  copy:
+    src: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/webapps/manager  
+    dest: /var/lib/tomcat/
+    remote_src: yes
+    directory_mode: yes
+  when: root_webapps.stat.exists == False
+
+
+## remove directories (conf, logs, temp, webapps, work) and recreate as symlinks
+# conf
+- name: check {{ tomcat_ver }} conf directory
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/conf
+  register: tomcat_conf_dir
+
+- name: Remove conf directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/conf
+    state: absent
+  when: tomcat_conf_dir.stat.isdir
+
+- name: Create conf symlink
+  file:
+    src: /etc/tomcat
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/conf
+    owner: root
+    group: tomcat
+    state: link
+  when: tomcat_conf_dir.stat.isdir or tomcat_conf_dir.stat.exists == False
+
+# logs
+- name: check {{ tomcat_ver }} logs directory
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/logs
+  register: tomcat_logs_dir
+
+- name: Remove logs directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/logs
+    state: absent
+  when: tomcat_logs_dir.stat.isdir
+
+- name: Create logs symlink
+  file:
+    src: /var/log/tomcat
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/logs
+    owner: tomcat
+    group: tomcat
+    state: link
+  when: tomcat_logs_dir.stat.isdir or tomcat_logs_dir.stat.exists == False
+
+# temp
+- name: check {{ tomcat_ver }} temp directory
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/temp
+  register: tomcat_temp_dir
+
+- name: Remove temp directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/temp
+    state: absent
+  when: tomcat_temp_dir.stat.isdir
+
+- name: Create temp symlink
+  file:
+    src: /var/cache/tomcat/temp
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/temp
+    owner: tomcat
+    group: tomcat
+    state: link
+  when: tomcat_temp_dir.stat.isdir or tomcat_temp_dir.stat.exists == False
+
+# webapps
+- name: check {{ tomcat_ver }} webapps directory
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/webapps
+  register: tomcat_webapps_dir
+
+- name: Remove webapps directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/webapps    
+    state: absent
+  when: tomcat_webapps_dir.stat.isdir
+
+- name: Create webapps symlink
+  file:
+    src: /var/lib/tomcat
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/webapps
+    owner: root
+    group: tomcat
+    state: link
+  when: tomcat_webapps_dir.stat.isdir or tomcat_webapps_dir.stat.exists == False
+
+# work
+- name: check {{ tomcat_ver }} work directory
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/work
+  register: tomcat_work_dir
+
+- name: Remove webapps directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/work
+    state: absent
+  when: tomcat_work_dir.stat.isdir
+
+- name: Create work symlink
+  file:
+    src: /var/cache/tomcat/work
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/work
+    owner: tomcat
+    group: tomcat
+    state: link
+  when: tomcat_work_dir.stat.isdir or tomcat_webapps_dir.stat.exists == False
+
+# Setup systemd startup/shutdown script
+- name: Setup systemd startup/shutdown script
+  template:
+    src: tomcat.service.j2
+    dest: /etc/systemd/system/tomcat.service
+    mode: 0644
+    owner: root
+    group: root
+  register: tomcat_service
+
+- name: Apply new SELinux file context to tomcat.service
+  command: restorecon /etc/systemd/system/tomcat.service
+  when: tomcat_service.changed
+
+- name: Reload systemd daemons after service update
+  command: systemctl daemon-reload
+  when: tomcat_service.changed
+
+- name: Ensure tomcat is running and enabled
+  ansible.builtin.systemd:
+    name: tomcat
+    enabled: yes
+
+- name: Check if mysql-connector exists in (current) latest tomcat library directory
+  stat:
+    path: /opt/tomcat/latest/lib/mysql-connector-java-5.1.38-bin.jar
+  register: mysql_connector
+
+- name: Move mysql-connector to new install directory
+  copy:
+    src: /opt/tomcat/latest/lib/mysql-connector-java-5.1.38-bin.jar
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/lib/mysql-connector-java-5.1.38-bin.jar
+    remote_src: yes
+  when: mysql_connector.stat.exists
+
+- name: Check if ojdbc7.jar file exists in (current) latest tomcat library directory
+  stat:
+    path: /opt/tomcat/latest/lib/ojdbc7.jar
+  register: ojbdc7
+
+- name: Move ojdbc7.jar library to new install directory
+  copy:
+    src: /opt/tomcat/latest/lib/ojdbc7.jar
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/lib/ojdbc7.jar
+    remote_src: yes
+  when: mysql_connector.stat.exists
+
+- name: Allow apache to network connect (needed for updates) via selinux
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes

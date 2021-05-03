@@ -1,0 +1,36 @@
+## This is not yet fully documented for public use - it's just an extra that I use that isn't
+## directly related to my CAS playbooks but is something I use all the time.
+## It is released with no warranty or support.
+
+## Function: Remove all snapshots for the given systems - NOT just those created via Ansible.
+## Prerequisites:
+##   - hosts must be defined in site.yml and in your ansible host file
+##   - the public ssh key for the user you run ansible as should be in the authorized_keys file for the target systems
+##   - VCENTER_* variables must be in your vcenter-vault.yml file.  You should use ansible-vault to encrypt that password.
+##   - vmware_* variables should be in your ansible hosts file.
+
+## Usage: ansible-playbook remove-all-vm-snapshots.yml --ask-vault-pass --limit <one or more host or host groups, separated by commas>
+## For example the following will run this on server1, server2, and all servers in test_phase1 (as defined in site.yml):
+## ansible-playbook remove-all-vm-snapshots.yml --ask-vault-pass --limit server1,server2,test_phase2
+
+- hosts: all
+  user: root
+  gather_facts: no
+  vars_files: vcenter-vault.yml
+
+# vcenter_hostname, vcenter_username, and vcenter_password
+# should be included in variables.  
+
+  tasks:
+    - name: Remove all snapshots associated with VM
+      vmware_guest_snapshot:
+        hostname: "{{ VCENTER_HOSTNAME }}"
+        validate_certs: False
+        username: "{{ VCENTER_USERNAME }}"
+        password: "{{ VCENTER_PASSWORD }}"
+        datacenter: "Computer Services"
+        name: "{{ vmware_name }}"
+        folder: "{{ vmware_folder }}"
+        state: remove_all
+      when: "vmware_name is defined"
+      delegate_to: localhost

@@ -1,0 +1,101 @@
+- name: Check if OpenSSL {{ openssl_ver }} is already installed
+  stat:
+    path: /opt/openssl/openssl-{{ openssl_ver }}/bin/openssl
+  register: openssl_binary
+
+- name: Create base OpenSSL directory
+  file:
+    path: /opt/openssl
+    state: directory
+    owner: root
+    group: root
+
+- name: Check if OpenSSL {{ openssl_ver }} is already downloaded
+  stat:
+    path: /root/openssl-{{ openssl_ver }}.tar.gz
+  register: openssl_tarball
+
+# Only download OpenSSL if version {{ openssl_ver }} isn't installed and the tarball isn't already downloaded
+- name: Download OpenSSL
+  get_url:
+    url: "{{ openssl_archive_url }}"
+    dest: "{{ openssl_archive_dest }}"
+  when: openssl_tarball.stat.exists == False and openssl_binary.stat.exists == False
+
+
+- name: Create new OpenSSL install directory
+  file:
+    path: /opt/openssl/openssl-{{ openssl_ver }}
+    state: directory
+    owner: root
+    group: root
+
+
+# Only unpack OpenSSL archive if the openssl {{ openssl_ver }} binary does not exist.
+- name: Unpack OpenSSL archive
+  unarchive:
+    src: "{{ openssl_archive_dest }}"
+    dest: /root/
+    owner: root
+    group: root
+    remote_src: yes
+  when: openssl_binary.stat.exists == False
+ 
+# Only reconfigure if the OpenSSL binary for the version didn't already exist
+- name: Configure OpenSSL source
+  command: "./config --prefix=/opt/openssl/openssl-{{ openssl_ver }} shared"
+  args:
+    chdir: "/root/openssl-{{ openssl_ver }}"
+  when: openssl_binary.stat.exists == False
+
+# Only make if the OpenSSL binary for the version didn't already exist
+- name: Compile OpenSSL
+  shell: make
+  args:
+    chdir: "/root/openssl-{{ openssl_ver }}"
+  when: openssl_binary.stat.exists == False
+
+- name: Install Openssl
+  shell: make install
+  args:
+      chdir: "/root/openssl-{{ openssl_ver }}"
+  when: openssl_binary.stat.exists == False
+
+## Handle OpenSSL symlink creation or repointing
+- name: Check if OpenSSL latest symlink exists
+  stat:
+    path: /opt/openssl/latest
+  register: openssl_symlink
+
+# Create symlink if none exists
+- name: Create OpenSSL latest symlink
+  file:
+    src: "/opt/openssl/openssl-{{ openssl_ver }}"
+    dest: "/opt/openssl/latest"
+    owner: root
+    group: root
+    state: link
+  when: openssl_symlink.stat.exists == False or openssl_symlink.stat.islnk
+
+# Setup openssl ld.so.conf.d file
+- name: Setup ldconf file for OpenSSL
+  template:
+    src: openssl.conf.j2
+    dest: /etc/ld.so.conf.d/openssl.conf
+    owner: root
+    group: root
+
+- name: reload ldconfig
+  command: /sbin/ldconfig
+  when: openssl_binary.stat.exists == False
+
+# Cleanup
+- name: Remove openssl source directory
+  file:
+    path: /root/openssl-{{ openssl_ver }}
+    state: absent
+
+- name: Remove openssl source tarball
+  file:
+    path: /root/openssl-{{ openssl_ver }}.tar.gz
+    state: absent

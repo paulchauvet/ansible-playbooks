@@ -1,0 +1,17 @@
+- name: Setup Apache Tomcat {{ tomcat_ver }} symlink
+  file:
+    src: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}
+    dest: /opt/tomcat/latest
+    owner: root
+    group: root
+    state: link
+  notify: restart tomcat
+
+# Cleanup
+- name: Remove tomcat tarball
+  file:
+    path: /root/apache-tomcat-{{ tomcat_ver }}.tar.gz
+    state: absent
+
+
+    

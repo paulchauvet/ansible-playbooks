@@ -1,0 +1,10 @@
+---
+
+- name: "Copy CAS Apache AJP proxy config"
+  template:
+    src: cas-ajp.conf.j2
+    dest: /etc/httpd/conf.d/cas-ajp.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload httpd

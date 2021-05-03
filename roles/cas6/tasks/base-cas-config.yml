@@ -1,0 +1,104 @@
+---
+
+- include_vars: cas-vault.yml
+
+- name: Ensure base CAS config directory exists
+  file:
+    path: /etc/cas/config
+    state: directory
+    mode: 0770
+    owner: root
+    group: tomcat
+
+- name: Ensure base CAS services directory exists
+  file:
+    path: /etc/cas/services
+    state: directory
+    mode: 0750
+    owner: root
+    group: tomcat
+
+- name: Ensure base CAS log directory exists
+  file:
+    path: /var/log/cas
+    state: directory
+    mode: 0750
+    owner: tomcat
+    group: tomcat
+
+
+- name: Configure cas.properties file (dev)
+  template:
+    src: dev-cas.properties.j2
+    dest: /etc/cas/config/cas.properties
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Configure cas.properties file (test)
+  template:
+    src: test-cas.properties.j2
+    dest: /etc/cas/config/cas.properties
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Configure cas.properties file (prod)
+  template:
+    src: prod-cas.properties.j2
+    dest: /etc/cas/config/cas.properties
+    mode: 0640
+    owner: root
+    group: tomcat
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat
+
+# For us at least, log4j2 is the same on production, dev, or test,
+# so it's not tier dependent and doesn't need the 'when' statement.
+# This uses the 'copy' module instead of the 'template' module since
+# Ansible does not like the {} all over that file.  If you need to change that per-server
+# You'll need to create an version of log4j2.xml with {} escaped.
+- name: Copy log4j2.xml
+  ansible.builtin.copy:
+    src: log4j2.xml
+    dest: /etc/cas/config/log4j2.xml
+    mode: 0640
+    owner: root
+    group: tomcat
+  notify: restart tomcat  
+
+# Note: dev-cas6.war file should be placed in the 'files' subdirectory of your cas role
+# Likewise for test or production.
+- name: Copy CAS war file (DEV)
+  ansible.builtin.copy:
+    src: dev-cas.war
+    dest: /opt/tomcat/latest/webapps/cas.war
+    mode: 0750
+    owner: tomcat
+    group: tomcat
+  when: ("login6dev" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Copy CAS war file (TEST)
+  ansible.builtin.copy:
+    src: test-cas.war
+    dest: /opt/tomcat/latest/webapps/cas.war
+    mode: 0750
+    owner: tomcat
+    group: tomcat
+  when: ("login6test" in inventory_hostname)
+  notify: restart tomcat
+
+- name: Copy CAS war file (PROD)
+  ansible.builtin.copy:
+    src: prod-cas.war
+    dest: /opt/tomcat/latest/webapps/cas.war
+    mode: 0750
+    owner: tomcat
+    group: tomcat
+  when: ("login6prod" in inventory_hostname)
+  notify: restart tomcat

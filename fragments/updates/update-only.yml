@@ -1,0 +1,43 @@
+## This is not yet fully documented for public use - it's just an extra that I use that isn't
+## directly related to my CAS playbooks but is something I use all the time.
+## It is released with no warranty or support.
+
+## Function: Update the specified systems via yum or dnf.
+## Prerequisites:
+##   - hosts must be defined in site.yml and in your ansible host file
+##   - the public ssh key for the user you run ansible as should be in the authorized_keys file for the target systems
+
+## Usage: ansible-playbook update-only.yml --limit <one or more host or host groups, separated by commas>
+## For example the following will run this on server1, server2, and all servers in test_phase1 (as defined in site.yml):
+## ansible-playbook update-only.yml --ask-vault-pass --limit server1,server2,test_phase2
+
+- hosts: prod-phase1, prod-phase2, prod-phase3, test, wordpress
+  user: root
+  gather_facts: yes
+  serial: "20%"
+
+  tasks:
+
+    - name: "Show ansible_distribution version info"
+      debug: var=ansible_distribution
+    - name: "Show minor version info"
+      debug: var=ansible_distribution_major_version
+
+    - name: Apply yum updates
+      yum:
+        name: "*"
+        state: "latest"
+      register: updates_applied
+      when: ansible_distribution == 'RedHat' and (ansible_major_distribution_major_version == '7' or ansible_major_distribution_major_version == '6')
+
+    - name: Apply dnf updates
+      yum:
+        name: "*"
+        state: "latest"
+      register: updates_applied
+      when: ansible_distribution == 'RedHat' and ansible_major_distribution_major_version == '8'
+
+    - name: Wait for system return
+      local_action: wait_for delay=20 connect_timeout=5 host={{ inventory_hostname }} port=22 state=started timeout=300
+      when: updates_applied.changed
+

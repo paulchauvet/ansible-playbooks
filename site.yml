@@ -1,0 +1,20 @@
+---
+# CAS 6
+- hosts: login6deva, login6devb
+  roles:
+    - security-hardening-rhel8
+    - apache-tomcat
+    - apache-httpd
+    - cas6
+    - cas-client
+    - simplesamlphp
+
+- hosts: login6testa, login6testb
+  roles:
+    - security-hardening-rhel8
+    - apache-tomcat
+    - apache-httpd
+    - cas6
+    - simplesamlphp
+    - cas-client
+

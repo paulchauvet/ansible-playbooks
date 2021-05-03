@@ -1,0 +1,58 @@
+- name: Setup prerequisite yum packages (RHEL 7 & JDK 11)
+  yum:
+    name: ['epel-release', 'java-11-openjdk', 'java-11-openjdk-devel', 'haveged', 'gcc', 'libtool', 'make', 'policycoreutils-python']
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7' and jdk_version == 11
+
+- name: Setup prerequisite yum packages (RHEL 7 & JDK 8)
+  yum:
+    name: ['epel-release', 'java-1.8.0-openjdk', 'java-1.8.0-openjdk-devel', 'haveged', 'gcc', 'libtool', 'make', 'policycoreutils-python']
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7' and jdk_version == 8
+
+- name: Setup prerequisite dnf packages (RHEL 8 & JDK 11)
+  dnf:
+    name:
+      - epel-release
+      - java-11-openjdk
+      - java-11-openjdk-devel
+      - haveged
+      - gcc
+      - libtool
+      - make
+      - openssl-devel
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and jdk_version == 11
+
+- name: Setup prerequisite dnf packages (RHEL 8 & JDK 11)
+  dnf:
+    name:
+      - epel-release
+      - java-1.8.0-openjdk
+      - java-1.8.0-openjdk-devel
+      - haveged
+      - gcc
+      - libtool
+      - make
+      - openssl-devel
+    state: present
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8' and jdk_version == 8
+
+- name: Ensure tomcat group exists
+  group:
+    name: tomcat
+
+- name: Ensure tomcat user exists
+  user:
+    name: tomcat
+    group: tomcat
+    home: /opt/tomcat
+    createhome: yes
+    system: yes
+
+- name: Make sure haveged is running and set to start on boot
+  ansible.builtin.systemd:
+    name: haveged
+    state: started
+    enabled: yes
+    masked: no

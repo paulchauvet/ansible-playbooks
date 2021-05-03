@@ -1,0 +1,54 @@
+- name: Check if Apache Tomcat Commons Daemon {{ commons_daemon_ver }} is already installed
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/jsvc
+  register: commons_daemon_jsvc
+
+# Untar tomcat native library
+- name: Unpack Tomcat Commons Daemon native library
+  unarchive:
+    src: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/commons-daemon-native.tar.gz"
+    dest: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/"
+    owner: tomcat
+    group: tomcat
+    remote_src: yes
+  when: commons_daemon_jsvc.stat.exists == False
+
+# Only configure if the Tomcat Native Library directory for the version didn't already exist
+- name: Configure Tomcat Commons Daemon native library (JDK 11)
+  command: "./configure --with-java={{ JAVA_HOME }}"
+  args:
+    chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/commons-daemon-{{ commons_daemon_ver }}-native-src/unix"
+  when: commons_daemon_jsvc.stat.exists == False and jdk_version == 11
+
+# Only configure if the Tomcat Native Library directory for the version didn't already exist
+- name: Configure Tomcat Commons Daemon native library (JDK 8)
+  command: "./configure --with-java={{ JAVA_8_HOME }}"
+  args:
+    chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/commons-daemon-{{ commons_daemon_ver }}-native-src/unix"
+  when: commons_daemon_jsvc.stat.exists == False and jdk_version == 8
+
+       
+# Only make if the Tomcat Native Library directory for the version didn't already exist
+- name: Compile Tomcat Commons Daemon native library
+  shell: make
+  args:
+    chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/commons-daemon-{{ commons_daemon_ver }}-native-src/unix"
+  when: commons_daemon_jsvc.stat.exists == False
+
+- name: Move jsvc file
+  copy:
+    src: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/commons-daemon-{{ commons_daemon_ver }}-native-src/unix/jsvc"
+    dest: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/"
+    remote_src: yes
+    owner: root
+    group: tomcat
+    mode: 0755
+  when: commons_daemon_jsvc.stat.exists == False
+
+
+# Cleanup
+- name: Remove commons-daemon source directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/commons-daemon-{{ commons_daemon_ver }}-native-src
+    state: absent
+

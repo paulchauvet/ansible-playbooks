@@ -1,0 +1,81 @@
+- name: Check if APR {{ apr_ver }} is already installed
+  stat:
+    path: /opt/apr/apr-{{ apr_ver }}/bin/apr-1-config
+  register: apr_binary
+
+- name: Create base APR directory
+  file:
+    path: /opt/apr
+    state: directory
+    owner: root
+    group: root
+
+- name: Create APR {{ apr_ver }} directory
+  file:
+    path: /opt/apr/apr-{{ apr_ver }}
+    state: directory
+    owner: root
+    group: root   
+
+- name: Check if APR {{ apr_ver }} is already downloaded
+  stat:
+    path: /root/apr-{{ apr_ver }}.tar.gz
+  register: apr_tarball
+
+# Only download APR if APR {{ apr_ver }} isn't already installed, and the tarball isn't downloaded
+- name: Download APR
+  get_url:
+    url: "{{ apr_archive_url }}"
+    dest: "{{ apr_archive_dest }}"
+  when: apr_tarball.stat.exists == False and apr_binary.stat.exists == False
+
+# Only unpack apr archive if the apr binary doesn't already exist
+- name: Unpack APR archive
+  unarchive:
+    src: "{{ apr_archive_dest }}"
+    dest: /root/
+    owner: root
+    group: root
+    remote_src: yes
+  when: apr_binary.stat.exists == False
+ 
+# Only reconfigure if the APR directory for the version didn't already exist
+- name: Configure APR source
+  command: ./configure --prefix=/opt/apr/apr-{{ apr_ver }}
+  args:
+    chdir: "/root/apr-{{ apr_ver }}"
+  when: apr_binary.stat.exists == False
+
+# Only make if the APR directory for the version didn't already exist
+- name: Compile/install APR
+  shell: make && make install
+  args:
+    chdir: "/root/apr-{{ apr_ver }}"
+  when: apr_binary.stat.exists == False
+
+## Handle APR symlink creation or repointing
+- name: Check if apr latest symlink exists
+  stat:
+    path: /opt/apr/latest
+  register: apr_symlink
+
+# Create symlink if none exists
+- name: Create apr latest symlink
+  file:
+    src: "/opt/apr/apr-{{ apr_ver }}"
+    dest: "/opt/apr/latest"
+    owner: root
+    group: root
+    state: link
+  when: apr_symlink.stat.exists == False or apr_symlink.stat.islnk
+
+# Cleanup
+- name: Remove apr source directory
+  file:
+    path: /root/apr-{{ apr_ver }}
+    state: absent
+
+- name: Remove apr source tarball
+  file:
+    path: /root/apr-{{ apr_ver }}.tar.gz
+    state: absent

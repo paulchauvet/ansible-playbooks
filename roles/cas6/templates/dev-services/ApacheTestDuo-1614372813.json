@@ -1,0 +1,15 @@
+{
+    "@class" : "org.apereo.cas.services.RegexRegisteredService",
+    "serviceId" : "^https://{{ DEV_CAS_URL }}/duo-secured(\\z|/.*)",
+    "name" : "Apache Test - Duo MFA",
+    "id" : 1614372813,
+    "description" : "Apache Test - Duo MFA",
+    "attributeReleasePolicy" : {
+      "@class" : "org.apereo.cas.services.ReturnAllAttributeReleasePolicy"
+    },
+    "multifactorPolicy" : {
+        "@class" : "org.apereo.cas.services.DefaultRegisteredServiceMultifactorPolicy",
+        "multifactorAuthenticationProviders" : [ "java.util.LinkedHashSet", [ "mfa-duo" ] ]
+    },
+    "evaluationOrder" : 85000
+}

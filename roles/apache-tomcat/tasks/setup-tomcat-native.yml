@@ -1,0 +1,50 @@
+- name: Check if Tomcat Native Library {{ tomcat_native_ver }} is already installed
+  stat:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/lib/libtcnative-1.so
+  register: tomcat_native_library
+
+# Untar tomcat native library
+- name: Unpack tomcat native library archive
+  unarchive:
+    src: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/tomcat-native.tar.gz"
+    dest: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/
+    owner: tomcat
+    group: tomcat
+    remote_src: yes
+  when: tomcat_native_library.stat.exists == False
+
+
+# Only configure if the Tomcat Native Library directory for the version didn't already exist
+- name: Configure Tomcat Native Library (RHEL7 & JDK 11)
+  command: "./configure --with-java-home={{ JAVA_HOME }} --with-apr=/opt/apr/latest/bin/apr-1-config --with-ssl=/opt/openssl/latest --prefix=/opt/tomcat/apache-tomcat-{{ tomcat_ver }}"
+  args:
+    chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/tomcat-native-{{ tomcat_native_ver }}-src/native"
+  when: tomcat_native_library.stat.exists == False and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7' and jdk_version == 11
+
+# Only configure if the Tomcat Native Library directory for the version didn't already exist
+- name: Configure Tomcat Native Library (RHEL7 & JDK 8)
+  command: "./configure --with-java-home={{ JAVA_8_HOME }} --with-apr=/opt/apr/latest/bin/apr-1-config --with-ssl=/opt/openssl/latest --prefix=/opt/tomcat/apache-tomcat-{{ tomcat_ver }}"
+  args:
+    chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/tomcat-native-{{ tomcat_native_ver }}-src/native"
+  when: tomcat_native_library.stat.exists == False and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7' and jdk_version == 8
+
+
+# Only configure if the Tomcat Native Library directory for the version didn't already exist
+- name: Configure Tomcat Native Library (RHEL8)
+  command: "./configure --with-java-home={{ JAVA_HOME }} --with-apr=/opt/apr/latest/bin/apr-1-config --with-ssl=yes --prefix=/opt/tomcat/apache-tomcat-{{ tomcat_ver }}"
+  args:
+    chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/tomcat-native-{{ tomcat_native_ver }}-src/native"
+  when: tomcat_native_library.stat.exists == False and ansible_distribution == 'RedHat' and ansible_distribution_major_version == '8'
+
+# Only make if the Tomcat Native Library directory for the version didn't already exist
+- name: Compile/install Tomcat Native Library
+  shell: make && make install
+  args:
+      chdir: "/opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/tomcat-native-{{ tomcat_native_ver }}-src/native"
+  when: tomcat_native_library.stat.exists == False
+
+# Cleanup
+- name: Remove tomcat native source directory
+  file:
+    path: /opt/tomcat/apache-tomcat-{{ tomcat_ver }}/bin/tomcat-native-{{ tomcat_native_ver }}-src
+    state: absent

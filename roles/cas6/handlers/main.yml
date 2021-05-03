@@ -1,0 +1,23 @@
+---
+# handlers file for cas6
+
+# All that's really here for now is just commands to start, stop, and restart tomcat, and httpd.
+- name: stop tomcat
+  ansible.builtin.systemd:
+    name: tomcat
+    state: stopped
+
+- name: start tomcat
+  ansible.builtin.systemd:
+    name: tomcat
+    state: started
+
+- name: restart tomcat
+  ansible.builtin.systemd:
+    name: tomcat
+    state: restarted
+
+- name: reload httpd
+  ansible.builtin.systemd:
+    name: tomcat
+    state: reloaded

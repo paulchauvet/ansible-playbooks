@@ -1,0 +1,4 @@
+---
+# tasks file for cas-client
+- include_tasks: setup-cas-client.yml
+- include_tasks: setup-test-pages.yml

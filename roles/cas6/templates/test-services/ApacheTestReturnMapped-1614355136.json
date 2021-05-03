@@ -1,0 +1,22 @@
+{
+    "@class" : "org.apereo.cas.services.RegexRegisteredService",
+    "serviceId" : "^https://{{ TEST_CAS_URL }}/return-mapped(\\z|/.*)",
+    "name" : "Apache Test - mapped attribute release",
+    "id" : 1614355136,
+    "description" : "Apache Test - mapped attribute release",
+    "attributeReleasePolicy" : {
+      "@class" : "org.apereo.cas.services.ReturnMappedAttributeReleasePolicy",
+      "allowedAttributes" : {
+        "@class" : "java.util.TreeMap",
+        "cn" : "cn",
+        "displayName" : "displayName",
+        "givenName" : "Formatted Name",
+        "mail" : "EmailAddress",
+        "memberOf" : "memberOf",
+        "role" : "role",
+        "sn" : "sn",
+        "uid" : "uid"
+      }
+    },
+    "evaluationOrder" : 90000
+  }

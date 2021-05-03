@@ -1,0 +1,15 @@
+---
+# tasks file for apache-tomcat
+- include_tasks: debug.yml
+- include_tasks: setup-prerequisites.yml
+
+- name: Setup OpenSSL (RHEL7)
+  include_tasks: setup-openssl.yml
+  when: ansible_distribution == 'RedHat' and ansible_distribution_major_version == '7'
+
+- include_tasks: setup-apr.yml
+- include_tasks: install.yml
+- include_tasks: setup-tomcat-native.yml
+- include_tasks: setup-commons-daemon.yml
+- include_tasks: configure-tomcat.yml
+- include_tasks: post-install.yml
