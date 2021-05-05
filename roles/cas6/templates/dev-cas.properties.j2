@@ -49,7 +49,8 @@ cas.authn.pac4j.saml[0].serviceProviderMetadataPath=/etc/cas/config/sp-metadata.
 cas.authn.pac4j.saml[0].identityProviderMetadataPath={{ DEV_AZURE_METADATA_PATH }}
 cas.authn.pac4j.saml[0].clientName={{ DEV_AZURE_APP_NAME }}
 cas.authn.pac4j.saml[0].use-name-qualifier=false
-cas.authn.pac4j.saml[0].maximumAuthenticationLifetime=10000
+cas.authn.pac4j.saml[0].maximum-authentication-lifetime=8640000
+#cas.authn.pac4j.saml[0].autoRedirect=true
 
 # These are the LDAP server setups
 # If you have more than one organizational unit - you can list them both here.
